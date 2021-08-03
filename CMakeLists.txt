@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.6)
 project(workflow_starter)
 
 # --- compile workflow --- #
-# definition
+# macro definition
 if (WIN32)
 	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   /MP /wd4200")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /wd4200 /Zc:__cplusplus /std:c++14")
@@ -28,7 +28,16 @@ if (WIN32)
     )
 elseif (UNIX)
     include_directories(
-        ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src
+ ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-windows/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src/algorithm
+        ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src/client
+        ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src/factory
+        ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src/kernel
+        ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src/manager
+        ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src/nameservice
+        ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src/protocol
+        ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src/server
+        ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src/util
     )
 endif()
 
@@ -48,7 +57,7 @@ elseif (UNIX)
     )
 endif()
 
-# specify workflow necessary source to compile
+# specify workflow necessary source to compile lib
 if (WIN32)
     file(GLOB WORKFLOW_SRC
         workflow-0.9.6/workflow-windows/src/algorithm/*.h
@@ -79,27 +88,66 @@ if (WIN32)
     )
 elseif (UNIX)
     set(WORKFLOW_SRC
-        workflow-0.9.6/workflow-linux/*.*
+        workflow-0.9.6/workflow-linux/src/algorithm/*.h
+        workflow-0.9.6/workflow-linux/src/algorithm/*.cc
+        workflow-0.9.6/workflow-linux/src/algorithm/*.inl
+        workflow-0.9.6/workflow-linux/src/client/*.h
+        workflow-0.9.6/workflow-linux/src/client/*.cc
+        workflow-0.9.6/workflow-linux/src/factory/*.h
+        workflow-0.9.6/workflow-linux/src/factory/*.cc
+        workflow-0.9.6/workflow-linux/src/factory/*.inl
+        workflow-0.9.6/workflow-linux/src/kernel_win/*.h
+        workflow-0.9.6/workflow-linux/src/kernel_win/*.c
+        workflow-0.9.6/workflow-linux/src/kernel_win/*.cc
+        workflow-0.9.6/workflow-linux/src/manager/*.h
+        workflow-0.9.6/workflow-linux/src/manager/*.cc
+        workflow-0.9.6/workflow-linux/src/manager/*.inl
+        workflow-0.9.6/workflow-linux/src/nameservice/*.h
+        workflow-0.9.6/workflow-linux/src/nameservice/*.cc
+        workflow-0.9.6/workflow-linux/src/protocol/*.h
+        workflow-0.9.6/workflow-linux/src/protocol/*.c
+        workflow-0.9.6/workflow-linux/src/protocol/*.cc
+        workflow-0.9.6/workflow-linux/src/protocol/*.inl
+        workflow-0.9.6/workflow-linux/src/server/*.h
+        workflow-0.9.6/workflow-linux/src/server/*.cc
+        workflow-0.9.6/workflow-linux/src/util/*.h
+        workflow-0.9.6/workflow-linux/src/util/*.cc
+        workflow-0.9.6/workflow-linux/src/*.h
     )
 endif()
 
 if (WIN32)
     add_library(workflow 
         ${WORKFLOW_SRC}
-
-        #ws2_32 
-        #wsock32 
-        #libssl.lib 
-        #libcrypto.lib
         )
+
+    # must specify the macro in windows
+    target_compile_definitions(
+		workflow PRIVATE
+		strdup=_strdup
+		strcasecmp=_stricmp
+		strncasecmp=_strnicmp
+	)
+
+    set(WORKFLOW_LIB 
+        workflow
+        ws2_32 
+        wsock32 
+        libssl.lib # remember to copy dll to bin dir
+        libcrypto.lib
+    )
+
 elseif (UNIX)
     add_library(workflow 
         ${WORKFLOW_SRC}
-
-        #pthread 
-        #ssl 
-        #crypto
         )
+
+    set(WORKFLOW_LIB 
+        workflow
+        pthread 
+        ssl # remember to set link path when in runtime
+        crypto
+    )
 endif ()
 
 # --- build self demo --- #
@@ -109,6 +157,6 @@ set(SRC src/main.cpp)
 # generate binary
 add_executable(${PROJECT_NAME} ${SRC})
 
-# link lib
+# link the whold workflow lib
 target_link_libraries(${PROJECT_NAME} ${WORKFLOW_LIB})
 
