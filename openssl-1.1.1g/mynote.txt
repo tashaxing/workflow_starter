@@ -1,0 +1,22 @@
+1,prebuilt openssl lib, .a and .so
+
+./config
+make
+
+NOTICE: use low level glibc to build and can be used in high level, ex: ubuntu16.04 -> ubunt18.04
+otherwise not work
+
+2,include dir is here
+
+3,remove test dir to reduce space
+
+4,uninstall system openssl to avoid header conflict ,but make sure the cake and ca bundles reinstalled later
+
+Remove any openssl include dir in system path
+
+- /usr/include/openssl
+- /usr/include/x86_64_gnu
+
+5,mac build has error, not supported yet, maybe use other method
+
+6,win built lib is debug version, based on x64 vs2019

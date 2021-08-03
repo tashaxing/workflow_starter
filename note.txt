@@ -1,0 +1,23 @@
+Tips
+
+1, comment the install part in windows cmake file otherwise configure failed
+
+2, it will automatically find crypto and ssl lib in system, if not exist you must prebuild and install
+
+3, change one line code to pass the compile in vs2019
+
+Communicator.cc:207
+
+int CommMessageIn::feedback(const void *buf, size_t size)
+
+to 
+
+int CommMessageIn::feedback(const char *buf, size_t size)
+
+4, workflow will generate _include dir for header path when built, maybe no need to use this dir
+
+5, do not use generated _lib dir, just link to every single component static lib
+
+6, use standalone openssl include and source code to compile the ssl and crypto lib as dependency
+
+7, just compile the workflow source to project, the original cmake file too complex
