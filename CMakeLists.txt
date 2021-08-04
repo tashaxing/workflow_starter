@@ -41,19 +41,33 @@ elseif (UNIX)
     )
 endif()
 
-# add dependency include dir
+# add dependency
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/openssl-1.1.1g/include
 )
 
-# add link path for workflow dependency
+if (UNIX)
+    # for linux kafka support
+    include_directories(
+        ${CMAKE_CURRENT_SOURCE_DIR}/snappy-1.1.9
+        ${CMAKE_CURRENT_SOURCE_DIR}/snappy-1.1.9/prebuild/linux
+        ${CMAKE_CURRENT_SOURCE_DIR}/lz4-1.9.3/lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/zstd-1.5.0/lib
+    )
+endif()
+
 if (WIN32)
+    # windows use self build lib
     link_directories(
         openssl-1.1.1g/prebuild/win
     )
-elseif (UNIX)
+else()
+    # linux use self build lib
     link_directories(
         openssl-1.1.1g/prebuild/linux
+        snappy-1.1.9/prebuild/linux
+        lz4-1.9.3/prebuild/linux
+        zstd-1.5.0/prebuild/linux
     )
 endif()
 
@@ -87,7 +101,7 @@ if (WIN32)
         workflow-0.9.6/workflow-windows/src/*.h
     )
 elseif (UNIX)
-    set(WORKFLOW_SRC
+    file(GLOB WORKFLOW_SRC
         workflow-0.9.6/workflow-linux/src/algorithm/*.h
         workflow-0.9.6/workflow-linux/src/algorithm/*.cc
         workflow-0.9.6/workflow-linux/src/algorithm/*.inl
@@ -96,9 +110,9 @@ elseif (UNIX)
         workflow-0.9.6/workflow-linux/src/factory/*.h
         workflow-0.9.6/workflow-linux/src/factory/*.cc
         workflow-0.9.6/workflow-linux/src/factory/*.inl
-        workflow-0.9.6/workflow-linux/src/kernel_win/*.h
-        workflow-0.9.6/workflow-linux/src/kernel_win/*.c
-        workflow-0.9.6/workflow-linux/src/kernel_win/*.cc
+        workflow-0.9.6/workflow-linux/src/kernel/*.h
+        workflow-0.9.6/workflow-linux/src/kernel/*.c
+        workflow-0.9.6/workflow-linux/src/kernel/*.cc
         workflow-0.9.6/workflow-linux/src/manager/*.h
         workflow-0.9.6/workflow-linux/src/manager/*.cc
         workflow-0.9.6/workflow-linux/src/manager/*.inl
@@ -129,12 +143,14 @@ if (WIN32)
 		strncasecmp=_strnicmp
 	)
 
-    set(WORKFLOW_LIB 
-        workflow
+    target_link_libraries(workflow 
+        # link to prebuild lib, remember to copy dll to bin dir
+        libssl.lib 
+        libcrypto.lib
+
+        # link behind
         ws2_32 
         wsock32 
-        libssl.lib # remember to copy dll to bin dir
-        libcrypto.lib
     )
 
 elseif (UNIX)
@@ -142,11 +158,17 @@ elseif (UNIX)
         ${WORKFLOW_SRC}
         )
 
-    set(WORKFLOW_LIB 
-        workflow
+    target_link_libraries(workflow 
+        # link to prebuild lib
+        libssl.a
+        libcrypto.a
+        libsnappy.a
+        liblz4.so
+        libzstd.a
+
+        # link behind
         pthread 
-        ssl # remember to set link path when in runtime
-        crypto
+        dl
     )
 endif ()
 
@@ -158,5 +180,5 @@ set(SRC src/main.cpp)
 add_executable(${PROJECT_NAME} ${SRC})
 
 # link the whold workflow lib
-target_link_libraries(${PROJECT_NAME} ${WORKFLOW_LIB})
+target_link_libraries(${PROJECT_NAME} workflow)
 
