@@ -3,23 +3,6 @@
 *.ko
 *.dSYM
 
-# Libraries
-*.lib
-*.a
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-/zstd
-zstdmt
-*.exe
-*.out
-*.app
-
 # Test artefacts
 tmp*
 *.zst

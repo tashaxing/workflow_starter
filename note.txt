@@ -30,7 +30,9 @@ int CommMessageIn::feedback(const char *buf, size_t size)
 6, use standalone third party include and source code to compile the ssl and crypto lib as dependency
 the prebuild platform must be accurate, for now:
 windows: vs2019
-linux: should build in specific system, ubuntu and centos does not shared the same so, you can just link to system lib
+linux: should build in specific system, ubuntu and centos may does not shared the same so, you can just link to system lib if you like
+remember to modify the ignore file and do not lose the .a and .so file when upload
+copy the .so.1.xx as .so to disable the soft link
 
 7, just compile the workflow source to project, the original cmake file too complex
 
