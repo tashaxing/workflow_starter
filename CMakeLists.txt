@@ -173,12 +173,28 @@ elseif (UNIX)
 endif ()
 
 # --- build self demo --- #
+# -- main
 # add source code
-set(SRC src/main.cpp)
+set(SRC 
+    src/message.h
+    src/message.cc
+    src/main.cpp
+)
 
 # generate binary
-add_executable(${PROJECT_NAME} ${SRC})
+add_executable(main ${SRC})
 
-# link the whold workflow lib
-target_link_libraries(${PROJECT_NAME} workflow)
+# link the whole workflow lib
+target_link_libraries(main workflow)
+
+# -- client
+set(CLIENT_SRC
+    src/message.h
+    src/message.cc
+    src/client.cc
+)
+
+add_executable(client ${CLIENT_SRC})
+
+target_link_libraries(client workflow)
 

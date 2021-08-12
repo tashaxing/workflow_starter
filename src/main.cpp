@@ -17,6 +17,11 @@
 	#include <unistd.h>
 #endif
 
+#include "factory/Workflow.h"
+#include "factory/WFTaskFactory.h"
+//#include "server/WFServer.h"
+#include "message.h"
+
 // matrix related
 typedef std::vector<std::vector<double>> Matrix;
 
@@ -122,9 +127,15 @@ void callback(MMTask* task)
 }
 
 // http related
-void process(WFHttpTask* server_task)
+void processHttp(WFHttpTask* server_task)
 {
 	protocol::HttpRequest* req = server_task->get_req();
+
+	const char* req_url = req->get_request_uri();
+	const char* req_method = req->get_method();
+
+	printf("http url: %s, method: %s\n", req_url, req_method);
+
 	protocol::HttpResponse* resp = server_task->get_resp();
 	long long seq = server_task->get_task_seq();
 	protocol::HttpHeaderCursor cursor(req);
@@ -183,6 +194,28 @@ void process(WFHttpTask* server_task)
 		addrstr, port, seq);
 }
 
+// tcp related
+using WFMyTcpTask = WFNetworkTask<MyRequest, MyResponse>;
+using WFMyTcpServer = WFServer<MyRequest, MyResponse>;
+
+void processTcp(WFMyTcpTask* task)
+{
+	MyRequest* req = task->get_req();
+	MyResponse* resp = task->get_resp();
+	void* body;
+	size_t size;
+	size_t i;
+
+	// FIXME: it seems the socket treat whitespace as frame seperator
+	req->get_message_body_nocopy(&body, &size);
+	std::string request((char*)body, size); // FIXME: have to copy the buffer to avoid tail unkown char
+	printf("Request size: %d, body: %s\n", size, request.c_str()); 
+	for (i = 0; i < size; i++)
+		((char*)body)[i] = toupper(((char*)body)[i]);
+
+	resp->set_message_body(body, size);
+}
+
 int main(int argc, char** argv)
 {
 	std::cout << "hello workflow cross platform" << std::endl;
@@ -217,11 +250,11 @@ int main(int argc, char** argv)
 	lock.unlock();
 
 	// --- http echo server
-	int port = 8099;
-	WFHttpServer http_server(process);
-	if (http_server.start(port) == 0)
+	int http_port = 8098;
+	WFHttpServer http_server(processHttp);
+	if (http_server.start(http_port) == 0)
 	{
-		printf("http server listening at %d\n", port);
+		printf("http server listening at %d\n", http_port);
 		getchar();
 		http_server.stop();
 	}
@@ -230,6 +263,28 @@ int main(int argc, char** argv)
 		perror("Cannot start http server");
 		exit(1);
 	}
+
+	// --- tcp echo server
+	int tcp_port = 8099;
+	struct WFServerParams params = SERVER_PARAMS_DEFAULT;
+	params.keep_alive_timeout = 0; // long connection
+	params.request_size_limit = 4 * 1024;
+
+	WFMyTcpServer server(&params, processTcp);
+	if (/*server.start(AF_INET6, tcp_port) == 0 ||*/
+		server.start(AF_INET, tcp_port) == 0) // FIXME: in windows maybe not support IPv6 default, just use IPv4
+	{
+		printf("tcp server listening at %d\n", tcp_port);
+		getchar();
+		server.stop();
+	}
+	else
+	{
+		perror("Cannot start tcp server");
+		exit(1);
+	}
+
+	printf("final exit\n");
 
 	return 0;
 }
