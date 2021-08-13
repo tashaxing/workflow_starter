@@ -156,8 +156,7 @@ int main(int argc, char *argv[])
 			printf("Server Response size: %d, body: %s\n", (int)body_size, rsp.c_str());
 
 		printf("Input next request string (Ctrl-D to exit): ");
-		*buf = '\0';
-		scanf("%1024s", buf);
+		scanf("%[^\n]%*c", buf); // contain white space, read until \n
 		body_size = strlen(buf);
 		if (body_size > 0)
 		{
