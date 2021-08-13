@@ -17,5 +17,6 @@ make
 
 `
 git clone https://github.com/tashaxing/workflow_starter
-# then use cmake-gui tool to configure and generate Visual Studio project sln file, open and build
 `
+
+then use cmake-gui tool to configure and generate Visual Studio project sln file, open and build
