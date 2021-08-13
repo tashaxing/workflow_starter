@@ -149,7 +149,6 @@ int main(int argc, char *argv[])
 			return;
 		}
 
-		// FIXME: it seems the socket treat whitespace as frame seperator
 		resp->get_message_body_nocopy(&body, &body_size);
 		std::string rsp((char*)body, body_size); // FIXME: have to copy the buffer to avoid tail unkown char
 		if (body_size != 0)

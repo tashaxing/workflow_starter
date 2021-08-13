@@ -206,7 +206,6 @@ void processTcp(WFMyTcpTask* task)
 	size_t size;
 	size_t i;
 
-	// FIXME: it seems the socket treat whitespace as frame seperator
 	req->get_message_body_nocopy(&body, &size);
 	std::string request((char*)body, size); // FIXME: have to copy the buffer to avoid tail unkown char
 	printf("Request size: %d, body: %s\n", size, request.c_str()); 
