@@ -28,7 +28,7 @@ if (WIN32)
     )
 elseif (UNIX)
     include_directories(
- ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-windows/src
+ 	${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src
         ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src/algorithm
         ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src/client
         ${CMAKE_CURRENT_SOURCE_DIR}/workflow-0.9.6/workflow-linux/src/factory
